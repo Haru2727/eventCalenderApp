@@ -1,36 +1,15 @@
-// var inputEl = document.querySelector(".form-control")
-// var todaysDate = new Date();
-// var rightNow = document.getElementById("currentDay").textContent = todaysDate;
-// console.log(todaysDate);
-
-
-
-// $(document).ready(function(){
-//     $(".btn-outline-secondary").on("click",function(){
-//         // alert("Whoa...this on click is working!");
-//         var scheduleEvent = $(".form-control").val();
-//         localStorage.setItem("form-control", JSON.stringify(scheduleEvent.value));
-//         console.log(scheduleEvent);
-
-//         var scheduleEvent2 = JSON.parse(localStorage.getItem("scheduleEvent"));
-//         if (scheduleEvent2 !== null){
-//             $(".form-control").textContent = scheduleEvent2
-
-//         }
-//     });
-
-// });
-
 $(document).ready(function () {
 
     // declaring variables 
+    // moment and formant allows what you can view for ex. (MM is the 2 digit code for the month)
+
     var todaysDate = moment().format("dddd, MMMM Do");
     var rightNow = moment().format("H A");
 
     // object array for work hours 
     var workdayHours = [
         { time: "9 AM", event: "" },
-        { time: "10 AM", event: ""},
+        { time: "10 AM", event: "" },
         { time: "11 AM", event: "" },
         { time: "12 PM", event: "" },
         { time: "1 PM", event: "" },
@@ -39,17 +18,28 @@ $(document).ready(function () {
         { time: "4 PM", event: "" },
         { time: "5 PM", event: "" },
     ];
+
+    //    grabbing the information from the user input area 
+    // i originally had this right above the save button function but it didn't work
+    // it took me some tinkering to try to figure out its scope maynbe why it does not work.  
+    // moved it around the page a bit, then realized it should be between the workdayHours & the rows created.
+    var schedEvents = JSON.parse(localStorage.getItem("workdayEvent"));
+    if (schedEvents) {
+        workdayHours = schedEvents;
+    }
+
     // setting the current day to the html id
     $("#currentDay").text(todaysDate);
 
     console.log(todaysDate);
-// creating the rows that will be repeated throughout the workdayHours object array
+
+    // creating the rows that will be repeated throughout the workdayHours object array
     workdayHours.forEach(function (timeBlock, index) {
         var timeLabel = timeBlock.time;
         var blocksColor = rowColor(timeLabel);
         var row =
-          
-      
+            // tried to use a table like we learned in this last week but it wouldn't come out correctly
+
             '<div class="time-block" id="' +
             index +
             '"><div class="row no-gutters input-group"><div class="col-sm col-lg-1 input-group-prepend hour justify-content-sm-end pr-3 pt-3">' +
@@ -58,43 +48,44 @@ $(document).ready(function () {
             blocksColor +
             '">' +
             timeBlock.event +
-            '</textarea><div class="col-sm col-lg-1 input-group-append"><button class="saveBtn btn-block" type="submit"><i class="fas fa-save"></i></button></div></div></div>';
-console.log(row);
-$(".container").append(row);
+            '</textarea><div class="col-sm col-lg-1 input-group-append"><button class="saveBtn btn-block" type="submit"><i class="fas fa-calendar-plus"></i></button></div></div></div>';
 
-// <tr id="row0">
-// <td>9AM</td>
-// <td>
-//   <input type="text" class="form-control" placeholder="9 am timeblock" aria-label="9 am"
-//    aria-describedby="button-addon2" />
-// </td>
-// <td>
-//   <button class="btn btn-outline-secondary" type="button" id="button-addon2, saveBtn" >
-//     <i class="fas fa-calendar-plus"></i>
-//   </button>
-// </td>
-// </tr>
+
+        // appending the rows to the html 
+        $(".container").append(row);
+
     });
-// appending the rows to the html 
- 
 
-
-// returns the color code for the rows based on present time
-    function rowColor(time){
+    // returns the color code for the rows based on present time 
+    // lets user see where in the day they are
+    function rowColor(time) {
         var now = moment(rightNow, "H A");
         var entry = moment(time, "H A");
-        if(now.isBefore(entry)===true){
+        if (now.isBefore(entry) === true) {
             return "future";
-        }else if (now.isAfter(entry)===true){
+        } else if (now.isAfter(entry) === true) {
             return "past";
-        }else {
+        } else {
             return "present";
         }
     }
 
+    // setting the save button funtion to record the information we grabbed from above
+    $(".saveBtn").on("click", function () {
+        var timeBlEl = parseInt(
+            $(this).closest(".time-block")
+                .attr("id")
+        );
 
+        var userEntry = $.trim(
+            $(this).parent()
+                .siblings("textarea")
+                .val()
+        );
 
+        workdayHours[timeBlEl].event = userEntry;
 
-
+        localStorage.setItem("workdayEvent", JSON.stringify(workdayHours));
+    });
 
 });
